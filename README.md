@@ -26,4 +26,4 @@ The packaging script creates a local ad-hoc-signed app and ZIP archive with sour
 - [Getting started with vidIQ](https://support.vidiq.com/en/articles/16976033-getting-started-with-vidiq)
 - [Keyword research](https://support.vidiq.com/en/articles/9421214-keywords-research)
 
-See [workflow parity](PARITY.md), [FAQ](FAQ.md), [test status](TESTING.md), [release state](RELEASES.md), and [acceptance gate](FINAL-GATE.md).
+See [workflow parity](PARITY.md), [FAQ](FAQ.md), [test status](TESTING.md), [release state](RELEASES.md), [acceptance gate](FINAL-GATE.md), and [shared engine hashes](CORE-SOURCE.md).
