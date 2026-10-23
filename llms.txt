@@ -6,5 +6,6 @@ This file is a short navigation aid for language models and other readers. It is
 - [FAQ](FAQ.md): supported capabilities and limits
 - [Tests](TESTING.md): test scope and runtime evidence boundary
 - [Release status](RELEASES.md): source and package state
+- [Shared engine hashes](CORE-SOURCE.md): compare the exact common data engine files
 - [Acceptance gate](FINAL-GATE.md): verified and open evidence
 - [Discoverability policy](DISCOVERABILITY.md): accurate public metadata and SEO claims
