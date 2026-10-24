@@ -1,0 +1,32 @@
+name: Swift package checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: creator-replica-swift-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-and-build:
+    runs-on: macos-26
+    timeout-minutes: 20
+    steps:
+      - name: Check out source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Show Swift version
+        run: swift --version
+      - name: Validate package manifest
+        run: swift package dump-package
+      - name: Run offline regression tests
+        run: swift test --jobs 2
+      - name: Build release app
+        run: swift build -c release --product CreatorReplica
+      - name: Check packaging script syntax
+        run: bash -n scripts/package-macos.sh
