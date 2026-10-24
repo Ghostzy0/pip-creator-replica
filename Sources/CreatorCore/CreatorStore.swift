@@ -67,7 +67,7 @@ public actor CreatorStore {
 
     public func exportCSV(ids: Set<String>) -> Data {
         let rows = library.videos.filter { ids.contains($0.id) }
-        let header = "title,channel,url,published_at,captured_at,source,views,likes,comments,workspace,notes"
+        let header = "id,title,channel,url,published_at,captured_at,source,views,likes,comments,workspace,notes"
         let body: [String] = rows.map { video in
             let publishedAt = video.publishedAt.map(Self.timestamp) ?? ""
             let capturedAt = Self.timestamp(video.capturedAt)
@@ -75,7 +75,7 @@ public actor CreatorStore {
             let likes = video.likes.map { String($0) } ?? ""
             let comments = video.comments.map { String($0) } ?? ""
             let fields: [String] = [
-                video.title, video.channel, video.url, publishedAt, capturedAt,
+                video.id, video.title, video.channel, video.url, publishedAt, capturedAt,
                 video.source.rawValue, views, likes, comments, video.workspace ?? "", video.notes
             ]
             return fields.map { Self.csvField($0) }.joined(separator: ",")

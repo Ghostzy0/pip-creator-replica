@@ -4,7 +4,7 @@ The `CreatorCore` directory is byte-for-byte identical in the custom and Neutral
 
 | File | SHA-256 |
 |---|---|
-| `Sources/CreatorCore/CreatorModels.swift` | `b8a41987795a29c905f1be745887a3273499838876fa22c11d897604381d9bbc` |
-| `Sources/CreatorCore/CreatorStore.swift` | `9734bca76cd33c7e7b055bf575e20a1e5369259a052f7cbfe22f7cbe5e950946` |
+| `Sources/CreatorCore/CreatorModels.swift` | `4e4ad3fd10a0fb5c7863e5fe568addd2fe5a3f9a1640c1e1cbbe058f11fa8386` |
+| `Sources/CreatorCore/CreatorStore.swift` | `6ab75d7803ee72369b2d32ef9eab74cc10c5b38669a70556c658c3cd65a60e21` |
 
 These hashes identify the shared engine files; application appearance, navigation and bundle identities are separate.

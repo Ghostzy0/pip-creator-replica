@@ -44,6 +44,12 @@ private enum ReplicaPage: String, CaseIterable, Identifiable {
     }
 }
 
+private enum ReplicaExportFormat: String, Identifiable {
+    case csv = "CSV"
+    case json = "JSON"
+    var id: String { rawValue }
+}
+
 @MainActor private final class ReplicaModel: ObservableObject {
     @Published var page: ReplicaPage? = .home
     @Published var videos: [CreatorVideo] = []
@@ -54,6 +60,12 @@ private enum ReplicaPage: String, CaseIterable, Identifiable {
     @Published var error: String?
     @Published var showingImporter = false
     @Published var showingManualNote = false
+    @Published var exportFormat: ReplicaExportFormat?
+    @Published var exportDocument: ReplicaExportDocument?
+    @Published var showingExportPreview = false
+    @Published var selectedExportIDs = Set<String>()
+    var exportConfirmed = false
+    private var exportItemCount = 0
     private let store: CreatorStore
 
     init() {
@@ -97,6 +109,58 @@ private enum ReplicaPage: String, CaseIterable, Identifiable {
             error = nil
         } catch let issue { error = issue.localizedDescription; notice = nil }
     }
+
+    func prepareExport(format: ReplicaExportFormat) {
+        selectedExportIDs = Set(videos.map(\.id))
+        exportConfirmed = false
+        exportFormat = format
+        notice = nil
+        error = nil
+        showingExportPreview = true
+    }
+
+    func exportPreviewDidDismiss() {
+        if exportConfirmed {
+            exportConfirmed = false
+            beginExport()
+        } else if exportDocument == nil {
+            exportFormat = nil
+        }
+    }
+
+    private func beginExport() {
+        guard let format = exportFormat, !selectedExportIDs.isEmpty else { return }
+        let ids = selectedExportIDs
+        exportItemCount = ids.count
+        showingExportPreview = false
+        Task {
+            do {
+                let data = format == .json
+                    ? try await store.exportJSON(ids: ids)
+                    : await store.exportCSV(ids: ids)
+                exportDocument = ReplicaExportDocument(data: data)
+            } catch {
+                self.error = error.localizedDescription
+                exportFormat = nil
+            }
+        }
+    }
+
+    func finishedExport(_ result: Result<URL, Error>) {
+        switch result {
+        case .success:
+            notice = "Exported \(exportItemCount) selected item\(exportItemCount == 1 ? "" : "s")."
+            error = nil
+        case .failure(let issue):
+            if issue is CancellationError {
+                notice = "Export canceled; no file was saved."
+            } else {
+                error = issue.localizedDescription
+            }
+        }
+        exportFormat = nil
+        exportDocument = nil
+    }
 }
 
 private struct ReplicaShell: View {
@@ -124,7 +188,21 @@ private struct ReplicaShell: View {
             case .failure(let failure): model.error = failure.localizedDescription
             }
         }
+        .fileExporter(
+            isPresented: Binding(
+                get: { model.exportDocument != nil },
+                set: { if !$0 { model.exportFormat = nil; model.exportDocument = nil } }
+            ),
+            document: model.exportDocument ?? ReplicaExportDocument(data: Data()),
+            contentType: model.exportFormat == .csv ? .commaSeparatedText : .json,
+            defaultFilename: "creator-research"
+        ) { result in
+            model.finishedExport(result)
+        }
         .sheet(isPresented: $model.showingManualNote) { ReplicaManualNoteSheet().environmentObject(model) }
+        .sheet(isPresented: $model.showingExportPreview, onDismiss: { model.exportPreviewDidDismiss() }) {
+            ReplicaExportPreview().environmentObject(model)
+        }
     }
 
     private var sidebar: some View {
@@ -167,6 +245,11 @@ private struct ReplicaShell: View {
             Spacer()
             TextField("Search local research", text: $model.search)
                 .textFieldStyle(.roundedBorder).frame(maxWidth: 320)
+            Menu {
+                Button("Export as CSV") { model.prepareExport(format: .csv) }
+                Button("Export as JSON") { model.prepareExport(format: .json) }
+            } label: { Label("Export", systemImage: "square.and.arrow.up") }
+                .buttonStyle(.bordered).disabled(model.videos.isEmpty)
             Button { model.showingManualNote = true } label: { Label("Add note", systemImage: "square.and.pencil") }.buttonStyle(.bordered)
             Button { model.showingImporter = true } label: { Label("Import", systemImage: "square.and.arrow.down") }
                 .buttonStyle(.bordered)
@@ -321,5 +404,67 @@ private struct ReplicaManualNoteSheet: View {
                 }.buttonStyle(.borderedProminent).keyboardShortcut(.defaultAction).disabled(title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
             }
         }.padding(22).frame(width: 460)
+    }
+}
+
+private struct ReplicaExportPreview: View {
+    @EnvironmentObject private var model: ReplicaModel
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 13) {
+            Text("Export research").font(.title2.weight(.semibold))
+            Text("Choose which items to include as \(model.exportFormat?.rawValue ?? "data"). This app does not upload exports. Choose where to save the file.")
+                .font(.callout).foregroundStyle(.secondary)
+            Text("\(model.selectedExportIDs.count) of \(model.videos.count) items selected")
+                .font(.caption.weight(.medium))
+            ScrollView {
+                LazyVStack(alignment: .leading, spacing: 2) {
+                    ForEach(model.videos) { video in
+                        Toggle(isOn: Binding(
+                            get: { model.selectedExportIDs.contains(video.id) },
+                            set: { checked in
+                                if checked { model.selectedExportIDs.insert(video.id) }
+                                else { model.selectedExportIDs.remove(video.id) }
+                            }
+                        )) {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(video.title).font(.callout.weight(.medium))
+                                Text("\(video.channel.isEmpty ? "No channel" : video.channel) · \(video.source.rawValue)")
+                                    .font(.caption2).foregroundStyle(.secondary)
+                            }
+                        }.toggleStyle(.checkbox).padding(.vertical, 3)
+                    }
+                }
+            }.frame(maxHeight: 310)
+            Text("Fields: id, title, channel, url, published_at, captured_at, source, views, likes, comments, workspace, notes.")
+                .font(.caption2).foregroundStyle(.secondary)
+            HStack {
+                Button("Select all") { model.selectedExportIDs = Set(model.videos.map(\.id)) }
+                Button("Select none") { model.selectedExportIDs.removeAll() }
+                Spacer()
+                Button("Cancel") { model.exportConfirmed = false; model.exportFormat = nil; dismiss() }
+                    .keyboardShortcut(.cancelAction)
+                Button("Choose save location…") { model.exportConfirmed = true; dismiss() }
+                    .keyboardShortcut(.defaultAction).buttonStyle(.borderedProminent)
+                    .disabled(model.selectedExportIDs.isEmpty)
+            }
+        }
+        .padding(22).frame(width: 520, height: 480)
+    }
+}
+
+private struct ReplicaExportDocument: FileDocument {
+    static var readableContentTypes: [UTType] { [.json, .commaSeparatedText] }
+    let data: Data
+
+    init(data: Data) { self.data = data }
+
+    init(configuration: ReadConfiguration) throws {
+        data = configuration.file.regularFileContents ?? Data()
+    }
+
+    func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper {
+        FileWrapper(regularFileWithContents: data)
     }
 }

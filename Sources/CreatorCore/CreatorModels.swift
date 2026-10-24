@@ -93,7 +93,10 @@ public enum CreatorImporter {
         var results: [CreatorVideo] = []
         for row in rows {
             let normalized = Dictionary(row.map { (normalize($0.key), $0.value) }, uniquingKeysWith: { first, _ in first })
-            if let origin = value(normalized, ["source", "provenance"]).map(normalize), ["youtubedataapi", "youtubeanalytics", "owneranalytics", "officialyoutube"].contains(where: origin.contains) {
+            let declaredOrigins = ["source", "provenance"].compactMap { value(normalized, [$0]).map(normalize) }
+            if declaredOrigins.contains(where: { origin in
+                ["youtubedataapi", "youtubeanalytics", "owneranalytics", "officialyoutube"].contains(where: origin.contains)
+            }) {
                 throw CreatorImportError.disallowedProvenance
             }
             guard let title = value(normalized, ["title", "videotitle", "name"]), !title.isEmpty else { continue }

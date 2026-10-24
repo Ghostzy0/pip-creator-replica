@@ -15,4 +15,4 @@ The Neutral Core app supports local records and explicit CSV/JSON import. It mus
 
 ## Status
 
-The initial shell follows the publicly documented Home, Optimize, Chat, Research and More Tools navigation. Local manual notes, file import and search work offline. Twelve core tests pass and a local package checksum is recorded. No signed-in comparison, runtime walkthrough, UI fidelity, scoring parity, public binary or clean-clone export build is claimed complete.
+The initial shell follows the publicly documented Home, Optimize, Chat, Research and More Tools navigation. Local manual notes, CSV/JSON import and selected-record export, and search work offline. Thirteen core tests pass. The updated source has not yet completed its clean-clone package and native walkthrough gates. No signed-in comparison, UI fidelity, scoring parity or public binary is claimed complete.
