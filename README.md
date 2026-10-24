@@ -4,9 +4,9 @@ A community-built, offline macOS research app with navigation informed by vidIQ'
 
 ## Scope and evidence
 
-The app provides a Neutral Core shell for documented creator workflows, local research notes, CSV/JSON import, search, provenance and raw values. Pages whose live data or service behavior is unavailable are labeled clearly. No signed-in visual comparison has been recorded. Public documentation does not expose exact product layout, hidden ranking, paid-plan behavior or proprietary scores.
+The app provides a Neutral Core shell for documented creator workflows, local research notes, CSV/JSON import and selected-record export, search, provenance and raw values. Export reviews selected records before opening the native save panel; CSV preserves IDs, dates, notes, source, workspace and metrics. Pages whose live data or service behavior is unavailable are labeled clearly. No signed-in visual comparison has been recorded. Public documentation does not expose exact product layout, hidden ranking, paid-plan behavior or proprietary scores.
 
-No network calls, AI provider, YouTube analytics, search-volume estimates, competition scores, performance predictions, competitor monitoring or proprietary outlier ranking are implemented. This is a workflow baseline, not a faithful visual or algorithmic recreation.
+No network calls, AI provider, YouTube analytics, search-volume estimates, competition scores, performance predictions, competitor monitoring or proprietary outlier ranking are implemented. This is a workflow baseline, not a faithful visual or algorithmic recreation. The app does not upload export files; the user chooses the save location, which may be a synced folder.
 
 ## Build and test
 

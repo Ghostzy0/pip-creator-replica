@@ -1,3 +1,3 @@
 # Source provenance
 
-This clean export was prepared from development revision `371021318e6f9b9c3379ddaff93ae7a93be516c4`; the app source and independently reviewed package build are revision `39e06348f5063442f1dec288766d786e1268e547`. The export contains only CreatorReplicaApp source, CreatorCore, tests, packaging script, license and public documentation. It excludes unrelated history and materials.
+This clean-history export carries the reviewed app source from development revision `fa862802b746fa687c6a3cd71c56d791e8b13c21`. The export contains only CreatorReplicaApp source, CreatorCore, tests, packaging script, license and public-safe documentation. It excludes unrelated monorepo history, private evidence and other app material.

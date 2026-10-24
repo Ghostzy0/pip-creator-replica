@@ -12,7 +12,7 @@ Updated 23 October 2026. This matrix separates the improved custom app from the 
 | Daily Ideas | Personalized/custom ideas described in public docs | Store manually researched idea records only | Manual title/source note; workspaces in Plus | Prediction and AI disabled |
 | Competitors | Competitor tracking described in product materials | Store manually entered records, no monitoring | Notes and grouping only | No connected channel monitoring |
 | Subscriber analytics | Subscriber analysis appears in product materials | Explicitly unavailable offline | No owner analytics connection | No account workflow or API approval |
-| Import/export | Not a parity claim | Local CSV/JSON/manual record workflow | Local CSV/JSON/manual library | External integrations not implemented |
+| Import/export | Not a parity claim | Local CSV/JSON/manual records; preview selected records and save CSV/JSON | Local CSV/JSON/manual library | External integrations not implemented; current source export package awaits native recheck |
 
 ## Evidence levels
 
@@ -21,4 +21,4 @@ Updated 23 October 2026. This matrix separates the improved custom app from the 
 - **Inferred:** local presentation choices that make a desktop workflow navigable; do not represent proprietary components or algorithm behavior.
 - **Unavailable:** live scores/volume, generated output, private channel metrics, authenticated account states, and exact hidden algorithms.
 
-CreatorReplica’s current shell is a reconstruction of the documented information architecture, not a completed or runtime-verified faithful recreation. No hands-on vidIQ session or comparison capture has been collected.
+CreatorReplica’s current shell is a reconstruction of the documented information architecture, not a completed or runtime-verified faithful recreation. No hands-on vidIQ session or comparison capture has been collected. Current public source has not yet been rebuilt from a clean clone or walked through natively.

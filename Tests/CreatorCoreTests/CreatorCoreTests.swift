@@ -53,10 +53,13 @@ struct CreatorCoreTests {
         let published = Date(timeIntervalSince1970: 1_800_000_000)
         let captured = Date(timeIntervalSince1970: 1_800_000_100)
         let source = CreatorVideo(id: "sample-1", title: "Sample research", channel: "Example", url: "https://example.com/video", publishedAt: published, capturedAt: captured, source: .sample, views: 12, likes: 3, comments: 1, notes: "A useful note", workspace: "Series")
-        _ = try await store.add([source])
+        let unselected = CreatorVideo(id: "manual-1", title: "Keep out of export", channel: "Other", source: .manual)
+        _ = try await store.add([source, unselected])
 
         let json = try await store.exportJSON(ids: [source.id])
-        let importedJSON = try CreatorImporter.decode(data: json, filename: "export.json", now: .distantPast).first
+        let jsonRows = try CreatorImporter.decode(data: json, filename: "export.json", now: .distantPast)
+        #expect(jsonRows.map(\.id) == [source.id])
+        let importedJSON = jsonRows.first
         #expect(importedJSON?.publishedAt == published)
         #expect(importedJSON?.capturedAt == captured)
         #expect(importedJSON?.source == .sample)
@@ -64,7 +67,9 @@ struct CreatorCoreTests {
         #expect(importedJSON?.workspace == "Series")
 
         let csv = await store.exportCSV(ids: [source.id])
-        let importedCSV = try CreatorImporter.decode(data: csv, filename: "export.csv", now: .distantPast).first
+        let csvRows = try CreatorImporter.decode(data: csv, filename: "export.csv", now: .distantPast)
+        #expect(csvRows.map(\.id) == [source.id])
+        let importedCSV = csvRows.first
         #expect(importedCSV?.publishedAt == published)
         #expect(importedCSV?.capturedAt == captured)
         #expect(importedCSV?.source == .sample)
@@ -91,6 +96,15 @@ struct CreatorCoreTests {
     @Test func rejectsAPIProvenanceEvenWhenOtherExportFieldsArePresent() {
         let data = Data("[{\"id\":\"v1\",\"title\":\"API item\",\"views\":12,\"capturedAt\":\"2026-10-23T00:00:00Z\",\"notes\":\"note\",\"source\":\"YouTube Analytics\"}]".utf8)
         #expect(throws: CreatorImportError.self) { try CreatorImporter.decode(data: data, filename: "api-export.json") }
+    }
+
+    @Test func rejectsAPIProvenanceDeclaredAlongsideManualSource() {
+        for data in [
+            Data("[{\"id\":\"v1\",\"title\":\"API item\",\"source\":\"manual\",\"provenance\":\"YouTube Analytics\"}]".utf8),
+            Data("[{\"id\":\"v2\",\"title\":\"API item\",\"source\":\"YouTube Data API\",\"provenance\":\"manual\"}]".utf8)
+        ] {
+            #expect(throws: CreatorImportError.self) { try CreatorImporter.decode(data: data, filename: "contradictory.json") }
+        }
     }
 
     @Test func storeRepairsDuplicateIDsAndCSVExportNeutralizesFormulaCells() async throws {

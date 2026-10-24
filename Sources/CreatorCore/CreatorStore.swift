@@ -67,9 +67,18 @@ public actor CreatorStore {
 
     public func exportCSV(ids: Set<String>) -> Data {
         let rows = library.videos.filter { ids.contains($0.id) }
-        let header = "title,channel,url,published_at,captured_at,source,views,likes,comments,workspace,notes"
-        let body = rows.map { video in
-            [video.title, video.channel, video.url, video.publishedAt.map(Self.timestamp) ?? "", Self.timestamp(video.capturedAt), video.source.rawValue, video.views.map(String.init) ?? "", video.likes.map(String.init) ?? "", video.comments.map(String.init) ?? "", video.workspace ?? "", video.notes].map(Self.csvField).joined(separator: ",")
+        let header = "id,title,channel,url,published_at,captured_at,source,views,likes,comments,workspace,notes"
+        let body: [String] = rows.map { video in
+            let publishedAt = video.publishedAt.map(Self.timestamp) ?? ""
+            let capturedAt = Self.timestamp(video.capturedAt)
+            let views = video.views.map { String($0) } ?? ""
+            let likes = video.likes.map { String($0) } ?? ""
+            let comments = video.comments.map { String($0) } ?? ""
+            let fields: [String] = [
+                video.id, video.title, video.channel, video.url, publishedAt, capturedAt,
+                video.source.rawValue, views, likes, comments, video.workspace ?? "", video.notes
+            ]
+            return fields.map { Self.csvField($0) }.joined(separator: ",")
         }
         return Data(([header] + body).joined(separator: "\r\n").data(using: .utf8) ?? Data())
     }
